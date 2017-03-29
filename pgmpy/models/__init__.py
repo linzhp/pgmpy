@@ -7,6 +7,7 @@ from .MarkovChain import MarkovChain
 from .MarkovModel import MarkovModel
 from .NaiveBayes import NaiveBayes
 from .NoisyOrModel import NoisyOrModel
+from .LinBujaBayesianModel import LinBujaBayesianModel
 from .LinearGaussianBayesianNetwork import LinearGaussianBayesianNetwork
 
 __all__ = ['BayesianModel',
@@ -16,6 +17,7 @@ __all__ = ['BayesianModel',
            'JunctionTree',
            'ClusterGraph',
            'DynamicBayesianNetwork',
+           'LinBujaBayesianModel',
            'MarkovChain',
            'NaiveBayes',
            'LinearGaussianBayesianNetwork']

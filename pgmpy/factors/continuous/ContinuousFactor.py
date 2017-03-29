@@ -116,7 +116,7 @@ class ContinuousFactor(BaseFactor):
         >>> copy_factor.variables
         ['x', 'y']
         """
-        return ContinuousFactor(self.scope(), self.distribution.copy())
+        return ContinuousFactor(self.scope, self.distribution.copy())
 
     def discretize(self, method, *args, **kwargs): 
         """
@@ -214,7 +214,7 @@ class ContinuousFactor(BaseFactor):
             if operation == 'divide':
                 return pdf(*self_pdf_args) / other.pdf(*other_pdf_args)
 
-        phi.distribution = CustomDistribution(modified_pdf, union_scope)
+        phi.distribution = CustomDistribution(union_scope, modified_pdf)
 
         if not inplace:
             return phi

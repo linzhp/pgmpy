@@ -7,7 +7,7 @@ import numpy as np
 from pgmpy.extern.six.moves import filter, range
 
 from pgmpy.extern.six import string_types
-from pgmpy.factors.discrete import factor_product
+from pgmpy.factors import factor_product
 from pgmpy.inference import Inference
 from pgmpy.models import JunctionTree
 from pgmpy.utils import StateNameDecorator
@@ -48,12 +48,12 @@ class VariableElimination(Inference):
         eliminated_variables = set()
         working_factors = {node: {factor for factor in self.factors[node]}
                            for node in self.factors}
-
         # Dealing with evidence. Reducing factors over it before VE is run.
         if evidence:
             for evidence_var in evidence:
                 for factor in working_factors[evidence_var]:
                     factor_reduced = factor.reduce([(evidence_var, evidence[evidence_var])], inplace=False)
+
                     for var in factor_reduced.scope():
                         working_factors[var].remove(factor)
                         working_factors[var].add(factor_reduced)
@@ -74,11 +74,11 @@ class VariableElimination(Inference):
             # Removing all the factors containing the variables which are
             # eliminated (as all the factors should be considered only once)
             factors = [factor for factor in working_factors[var]
-                       if not set(factor.variables).intersection(eliminated_variables)]
+                       if not set(factor.scope).intersection(eliminated_variables)]
             phi = factor_product(*factors)
             phi = getattr(phi, operation)([var], inplace=False)
             del working_factors[var]
-            for variable in phi.variables:
+            for variable in phi.scope:
                 working_factors[variable].add(phi)
             eliminated_variables.add(var)
 
@@ -86,13 +86,18 @@ class VariableElimination(Inference):
         for node in working_factors:
             factors = working_factors[node]
             for factor in factors:
-                if not set(factor.variables).intersection(eliminated_variables):
+                if not set(factor.scope).intersection(eliminated_variables):
                     final_distribution.add(factor)
 
         query_var_factor = {}
         for query_var in variables:
             phi = factor_product(*final_distribution)
-            query_var_factor[query_var] = phi.marginalize(list(set(variables) -
+
+            #an optimization to not have to normalize when marginalize does nothing
+            if len(list(set(variables) -set([query_var])))==0:
+                query_var_factor[query_var] = phi
+            else:
+                query_var_factor[query_var] = phi.marginalize(list(set(variables) -
                                                                set([query_var])),
                                                           inplace=False).normalize(inplace=False)
         return query_var_factor

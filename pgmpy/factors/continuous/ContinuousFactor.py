@@ -170,6 +170,9 @@ class ContinuousFactor(BaseFactor):
             s.distribution = distribution
             return s
 
+    def is_valid_cpd(self):
+        self.distribution.is_valid_cpd()
+
     def _operate(self, other, operation, inplace=True):
         """
         Gives the ContinuousFactor operation (product or divide) with

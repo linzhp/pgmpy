@@ -8,6 +8,10 @@ class BaseFactor(object):
     def __init__(self):
         pass
 
+    @abstractmethod
+    def is_valid_cpd(self):
+        pass
+
 def factor_product(*args):
     """
     Returns factor product over `args`.

@@ -338,6 +338,9 @@ class CustomDistribution(BaseDistribution):
         if not inplace:
             return phi
 
+    def is_valid_cpd(self):
+        pass
+
     def _operate(self, other, operation, inplace=True):
         """
         Gives the CustomDistribution operation (product or divide) with

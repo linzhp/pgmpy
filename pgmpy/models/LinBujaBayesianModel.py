@@ -87,35 +87,6 @@ class LinBujaBayesianModel(BayesianModel):
                 pred_values[k].append(v) #FIX THIS: only executed once, this is very hacky since k is always equal to zero and we are indexing the default dict
         return pd.DataFrame(pred_values, index=data.index)
         
-    def check_model(self):
-        """
-        Check the model for various errors. This method checks for the following
-        errors.
-
-        * Checks if the sum of the probabilities for each state is equal to 1 (tol=0.01).
-        * Checks if the CPDs associated with nodes are consistent with their parents.
-
-        Returns
-        -------
-        check: boolean
-            True if all the checks are passed
-        """
-        for node in self.nodes():
-            cpd = self.get_cpds(node=node)
-
-            if isinstance(cpd, TabularCPD) or isinstance(cpd,ContinuousFactor):
-                evidence = cpd.variables[:0:-1]
-                parents = self.get_parents(node)
-                if set(evidence if evidence else []) != set(parents if parents else []):
-                    raise ValueError("CPD associated with %s doesn't have "
-                                     "proper parents associated with it." % node)
-                if not np.allclose(cpd.to_factor().marginalize([node], inplace=False).values.flatten('C'),
-                                   np.ones(np.product(cpd.cardinality[:0:-1])),
-                                   atol=0.01):
-                    raise ValueError('Sum of probabilites of states for node %s'
-                                     ' is not equal to 1.' % node)
-        return True
-
     def add_cpds(self, *cpds):
         """
         Add CPD (Conditional Probability Distribution) to the Bayesian Model.
@@ -158,9 +129,6 @@ class LinBujaBayesianModel(BayesianModel):
                 self.cpds.append(cpd)
 
     def copy(self):
-        pass
-
-    def check_model(self):
         pass
 
     def get_cardinality(self, node):

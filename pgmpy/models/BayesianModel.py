@@ -11,6 +11,7 @@ import pandas as pd
 
 from pgmpy.base import DirectedGraph
 from pgmpy.factors.discrete import TabularCPD, JointProbabilityDistribution, DiscreteFactor
+from pgmpy.factors.continuous import ContinuousFactor
 from pgmpy.independencies import Independencies
 from pgmpy.extern import six
 from pgmpy.extern.six.moves import range, reduce
@@ -346,17 +347,14 @@ class BayesianModel(DirectedGraph):
         for node in self.nodes():
             cpd = self.get_cpds(node=node)
 
-            if isinstance(cpd, TabularCPD):
-                evidence = cpd.variables[:0:-1]
-                parents = self.get_parents(node)
-                if set(evidence if evidence else []) != set(parents if parents else []):
-                    raise ValueError("CPD associated with %s doesn't have "
-                                     "proper parents associated with it." % node)
-                if not np.allclose(cpd.to_factor().marginalize([node], inplace=False).values.flatten('C'),
-                                   np.ones(np.product(cpd.cardinality[:0:-1])),
-                                   atol=0.01):
-                    raise ValueError('Sum of probabilites of states for node %s'
-                                     ' is not equal to 1.' % node)
+            evidence = cpd.scope[:0:-1]
+            parents = self.get_parents(node)
+            if set(evidence if evidence else []) != set(parents if parents else []):
+                raise ValueError("CPD associated with %s doesn't have "
+                                    "proper parents associated with it." % node)
+            if not cpd.is_valid_cpd():
+                raise ValueError('Sum or integral of conditional probabilites for node %s'
+                                    ' is not equal to 1.' % node)
         return True
 
     def _get_ancestors_of(self, obs_nodes_list):
